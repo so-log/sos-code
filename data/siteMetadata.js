@@ -1,8 +1,8 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'sohee zzang!',
+  title: 'so-gooooooooood!',
   author: 'so',
-  headerTitle: 'hi! so Blog',
+  headerTitle: 'sohee zzang!',
   description: '안녕@ 반가워!',
   language: 'en-us',
   theme: 'system', // system, dark or light
@@ -11,12 +11,12 @@ const siteMetadata = {
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/twitter-card.png',
   mastodon: 'https://mastodon.social/@mastodonuser',
-  email: 'address@yoursite.com',
+  email: 'ansso8430@gmail.com',
   github: 'https://github.com/ansso8430',
-  twitter: 'https://twitter.com/Twitter',
-  facebook: 'https://facebook.com',
-  youtube: 'https://youtube.com',
-  linkedin: 'https://www.linkedin.com',
+  // twitter: 'https://twitter.com/Twitter',
+  // facebook: 'https://facebook.com',
+  // youtube: 'https://youtube.com',
+  // linkedin: 'https://www.linkedin.com',
   locale: 'en-US',
   analytics: {
     // If you want to use an analytics provider you have to add it to the
