@@ -2,14 +2,14 @@
 const siteMetadata = {
   title: 'so-gooooooooood!',
   author: 'so',
-  headerTitle: 'sohee zzang!',
+  headerTitle: '',
   description: '안녕@ 반가워!',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://hi-so-blog.vercel.app/',
   siteRepo: 'https://github.com/ansso8430/hello-so-world',
   siteLogo: '/static/images/logo.png',
-  socialBanner: '/static/images/twitter-card.png',
+  socialBanner: '/static/images/banner.png',
   mastodon: 'https://mastodon.social/@mastodonuser',
   email: 'ansso8430@gmail.com',
   github: 'https://github.com/ansso8430',
