@@ -9,4 +9,91 @@ layout: PostLayout
 canonicalUrl: https://hi-so-blog.vercel.app/blog/Rendering-engine
 ---
 
-# Introduction
+# Processing
+
+**브라우저는 HTML,CSS를 parsing하는 과정을 거쳐 render 할 수 있는 형태인 DOM Tree로 만들고 그려준다.**
+
+## 브라우저가 렌더링 되는 과정
+
+(img 웹페이지 로드 과정)
+
+여기서 프론트엔드의 역할은 Processing과 Load과정을 최적화하는 것이다.
+즉 domContentLoaded 와 loadEventStart의 발생 시점이 **빠를수록**, 그리고 발생 폭이 **좁을수록** 성능이 좋다고 말한다.
+
+### domContentLoaded
+
+- HTML과 CSS 파싱이 끝나는 시점
+- DOM, CSSOM 구성이 끝난 후, 렌더 트리 구성이 준비된 시점
+
+### loadEventStart
+
+-HTML상에 필요한 모든 리소스가 로드된 시점
+
+현재 개발 패러다임의 변화로 인해 이벤트 발생 시점 가지고는 성능을 판단하기 어렵다.
+
+> SPA(Single Page Application)
+> 초기 적은 양 HTML load -> 이벤트가 일찍 발생
+> 이후 사용과정에서 많은 스크립트를 실행 -> loading이 느려짐
+
+이로 인해 브라우저 기준 성능 측정보다 사용자 기준의 성능 측정이 더 중요해졌다.
+
+## 사용자 기준의 성능 측정 - 사용자가 콘텐츠를 보는 시점을 기반
+
+(img 렌더링 최적화 비교 예시)
+
+둘 다 같은 시점에 이벤트가 발생했다.
+하지만 위는 **점진적으로** 컨텐츠를 보여주고 아래는 **일괄적으로** 보여준다.
+이로 인해 사용자는 점진적 렌더링이 로딩이 더 빠르다고 느낀다.
+
+로딩 최적화 더 알아보기! - [loading](https://seokzin.tistory.com/entry/JavaScript-%EB%A1%9C%EB%94%A9-%EC%B5%9C%EC%A0%81%ED%99%94)
+
+# Rendering-engine
+
+## 브라우저 주요 구성요소
+
+(img pdf 브라우저 주요 구성요소)
+
+- 렌더링 엔진 : 요청한 콘텐츠를 표시. 예를 들어 HTML을 요청하면 HTML과 CSS를 파싱하여 화면에 표시함.
+
+### 렌더링 엔진의 동작과정
+
+(img pdf 렌더링 엔진의 동작과정)
+
+1. 문서를 읽어 브라우저가 문법을 분석, 코드를 이해한다.
+   `<script>` 태그를 만나면 JS를 해석할 때까지 파싱을 멈춘다
+1. 콘텐츠 트리 내부에서 태그를 DOM노드로 변환한다.
+1. 스타일 정보와 HTML 표시 규칙은 DOM과 CSSOM을 결합하여 "렌더 트리"라고 부르는 또 다른 트리를 생성한다.
+   즉, 어떤 엘리먼트에 어떤 스타일을 적용할 것인지 정해진다
+1. 각 요소의 크기와 위치를 계산한다. (Layout 단계)
+1. 요소를 실제로 픽셀로 변환하여 그린다. (Paint 단계, Rasterize)
+   픽셀로 그려진 여러 레이어를 합성한다. (Compositing 단계)
+
+   (img pdf 렌더링 엔진의 동작과정 p26~29)
+   브라우저는 어떻게 동작하는가? - [HowBrowsersWork: Behindthescenesofmodernwebbrowsers](https://d2.naver.com/helloworld/59361)
+
+## 모던 웹 브라우저 들여다보기
+
+### 1 - CPU, GPU, 메모리 그리고 다중 프로세스 아키텍처
+
+> 브라우저가 실행되는 환경을 이해하려면 컴퓨터 부품과 그 기능을 이해해야 한다.
+
+- CPU(central processing unit, 중앙처리장치) : 여러 종류의 작업을 하나씩 순서대로 처리할 수 있다.
+- GPU(graphics processing unit, 그래픽처리장치) : 간단한 작업을 처리, 여러 GPU 코어가 동시에 작업을 수행할 수 있다.
+  (img 그림3)
+- 프로세스 : 애플리케이션이 실행하는 프로그램이다.
+- 스레드 : 프로세스 내부에 있으며 프로세스로 실행되는 프로그램의 일부를 실행한다.
+- 브라우저 아키텍쳐
+  (img 그림7) (표추가)
+  (그림9)
+
+**다중 프로세스 아키텍처가 Chrome에 주는 이점**
+(여러 프로세스에서 나눠서 처리 할때)
+
+- 탭마다 랜더러 프로세스를 다르게 처리 -> 하나의 탭이 응답하지 않으면 브라우저를 전체종료하지 않아도 된다.
+- 보안, 격리 -> 사이트 별로 렌더러 프로세스를 다르게 처리 : CORS보안정책에 위반된 경우 ex 통합로그인
+- chrome의 서비스화 : 같은 정보를 처리하는 사이트들의 프로세스를 합쳐서 사용 -> 메로리를 절약할 수 있다.
+
+part2~4 ...
+출처 사용...
+
+![images](https://github.com/ansso8430/issue-to-markdown/assets/84768566/85df91a4-5a0d-41f7-a9ed-9cce13e8ff33)
