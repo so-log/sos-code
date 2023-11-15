@@ -10,7 +10,7 @@ const siteMetadata = {
   siteRepo: 'https://github.com/ansso8430/hello-so-world',
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/banner.png',
-  mastodon: 'https://mastodon.social/@mastodonuser',
+  // mastodon: 'https://mastodon.social/@mastodonuser',
   email: 'ansso8430@gmail.com',
   github: 'https://github.com/ansso8430',
   // twitter: 'https://twitter.com/Twitter',
