@@ -1,5 +1,5 @@
-<img src="/static/images/avatar.png" />
-<img src="/static/images/banner.png" />
+<img src="/public/static/images/avatar.png" />
+<img src="/public/static/images/banner.png" />
 
 ### '안녕하세요!
 
