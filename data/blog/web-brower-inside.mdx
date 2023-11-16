@@ -68,5 +68,159 @@ canonicalUrl: https://hi-so-blog.vercel.app/blog/web-browser-inside
 
 <br />
 
-part2~4 ...
-출처 사용...
+## 2 - 내비게이션 과정에서 일어나는 일
+
+> 웹 사이트를 표시하기 위해 각 프로세스와 스레드가 어떻게 통신하는가?
+
+### 네비게이션?
+
+사용자가 사이트를 요청하고 브라우저가 페이지 렌더링을 준비하는 과정을 말한다. 즉, 사이트간의 이동이다.
+
+### 브라우저 프로세스
+
+![Brower-Process](https://d2.naver.com/content/images/2019/03/helloworld-201903-sangwoo-ko_2-01.png)
+
+- UI 스레드 : 브라우저의 버튼과 입력란을 그린다.
+
+- 네트워크 스레드 : 인터넷에서 데이터를 가져오기 위해 네트워크 스택을 다룬다.
+
+- 스토리지 스레드 : 파일에 대한 접근을 제어한다.
+
+### 1단계 : 입력 처리
+
+UI 스레드가 주소창에 입력된 내용이 검색어(search query)인지 URL인지' 확인한다.
+
+### 2단계 : 내비게이션 시작
+
+사용자가 Enter 키를 누르면 사이트의 콘텐츠를 가져오기 위해 UI 스레드가 네트워크 호출을 시작한다.
+
+### 3단계 : 응답 읽기
+
+1. 네트워크 스레드는 Content-Type을 포함하는 response header와 실제 데이터인 payload를 읽는다. 응답 헤더의 Content-Type 헤더가 알려 주지만 정보가 없거나 잘못된 정보가 있을 수 있기 때문에 MIME스니핑을 실행해 데이터의 실제 형식을 알아낸다. <br /><br />
+   응답이 HTML 파일이라면(**'렌더러 프로세스가 다룰 수 있는 데이터 형식일 때'**) 데이터를 렌더러 프로세스에 전달하는 단계로 넘어간다. 하지만 응답이 ZIP 형식 파일이나 다른 형식의 파일이라면 다운로드 요청이므로 다운로드 매니저에 데이터를 전달하는 단계로 넘어가야 한다.
+
+> PDF 파일을 반환하는 주소로 접근했을 때 다운로드로 넘어가지 않고 브라우저에 문서를 바로 표시하는 경우를 생각할 수 있다.
+
+2. 응답 데이터가 안전한 사이트의 HTML문서인지 확인하는 Safe Browsing의 검사가 실행되는 단계이다.
+
+### 4단계 : 렌더러 프로세스 찾기
+
+네트워크 스레드는 UI스레드에 데이터가 준비되었음을 알리고 UI 스레드는 웹 페이지의 렌더링을 수행할 렌더러 프로세스를 찾는다.
+
+### 5단계 : 내비게이션 실행
+
+브라우저 프로세스는 렌더러 프로세스로 내비게이션을 실행하도록 IPC 메시지와 데이터 스트림을 전달한다. <br />
+랜더러 프로세스가 내비게이션을 실행한 것을 브라우저 프로세스가 확인하면 내비게이션이 완료되고 문서 로딩 단계가 시작된다.
+
+### 추가 단계 : 초기 로드 완료
+
+렌더러 프로세스가 렌더링을 '끝내면' 브라우저 프로세스로 IPC 메시지를 보내고 UI 스레드는 탭에서 로딩 스피너의 작동을 중지한다.
+
+### 다른 사이트로 내비게이션
+
+사용자가 다른 URL을 다시 입력하면 위와 같은 동일한 단계를 거쳐 다른 사이트로 이동을 한다.
+하지만 그전에 현재 렌더링된 사이트에서 **beforeunload 이벤트**를 확인해야 한다. <br />
+
+beforeunload 이벤트는 탭을 닫거나 이동하려고 할 때 "이 사이트를 떠나시겠습니까?"라는 경고창을 만들 수 있다.
+브라우저 프로세스가 새로운 내비게이션 요청이 들어오면 현재 렌더러 프로세스에 확인한다. <br />
+
+![beforeunload](https://d2.naver.com/content/images/2019/03/helloworld-201903-sangwoo-ko_2-09.png)
+![beforeunload-after](https://d2.naver.com/content/images/2019/03/helloworld-201903-sangwoo-ko_2-10.png)
+
+<br />
+
+## 3 - 렌더러 프로세스의 내부 동작
+
+> 렌더러 프로세스의 주요 역할은 HTML과 CSS, JavaScript를 사용자와 상호작용을 할 수 있는 웹 페이지로 변환하는 것이다.
+> _렌더링 엔진 포스트와 함께보기!_ - [rendering-engine](https://hi-so-blog.vercel.app/blog/Rendering-engine)
+
+### 웹 콘텐츠 처리
+
+![renderer-process](https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-01.png)
+
+- 메인 스레드 : 브라우저로 전송된 대부분의 코드 처리한다.
+
+- 워커 스레드 : 웹 워커나 서비스 워커를 사용하는 경우에 JavaScript 코드의 일부를 처리한다.
+
+- 컴포지터 스레드, 래스터 스레드 : 웹 페이지를 효율적이고 부드럽게 렌더링한다.
+
+### DOM 구축
+
+렌더러 프로세스의 메인 스레드는 문자열(HTML)을 파싱해서 DOM(document object model)으로 변환하기 시작한다.
+이때 HTML 태그에 잘못된 마크업이 있어도 오류를 우아하게 처리하도록 HTML 명세가 설계됐기 때문에 잘 동작한다.
+
+### 하위 리소스(subresource)로딩
+
+웹 사이트는 일반적으로 이미지, CSS, JavaScript와 같은 외부 리소스를 사용한다. 이때 속도를 높이기 위해 '프리로드(Preload) 스캐너'가 동시에 실행된다.
+HTML 문서에 `<img>` 또는 `<link>` 와 같은 태그가 있으면 프리로드 스캐너는 HTML 파서가 생성한 토큰을 확인하고 브라우저 프로세스의 네트워크 스레드에 요청을 보낸다.
+
+![main-thread](https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-02.png)
+
+### Parsing
+
+JavaScript는 DOM 구조 전체를 바꿀 수 있는 document.write() 메서드와 같은 것을 사용해 문서의 모양을 변경할 수 있기 때문에! <br />
+`<script>` 태그를 만나면 HTML 파서는 HTML 문서의 파싱을 일시 중지한 다음 JavaScript 코드를 로딩하고 파싱해 실행해야 한다.
+
+**HTML파싱을 막지 않는 방법** <br />
+
+1.  `<script>` 태그에 async 속성이나 defer 속성을 추가할 수 있다.
+
+1.  JavaScript 모듈을 사용할 수도 있다. `<link rel="preload">`는 리소스를 가능한 빨리 다운로드하려는 경우에 사용할 수 있다.
+
+### 스타일 계산
+
+메인 스레드는 CSS를 파싱하고 각 DOM 노드에 해당되는 계산된 스타일(computed style)을 확정한다.
+
+### 레이아웃
+
+DOM과 계산된 스타일을 훑어가며 레이아웃 트리를 만든다.
+
+![layout-tree](https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-05.png)
+
+### 페인트
+
+DOM, 스타일, 레이아웃을 가지고도 여전히 페이지를 렌더링할 수 없다. 요소의 크기, 모양, 위치를 알더라도 어떤 순서로 그려야 할지 판단해야 한다.
+![paint-records](https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-09.png)
+
+### 합성
+
+스타일, 레이아웃, 페인트 순서등의 정보를 화면의 픽셀로 변환하는 작업을 **래스터화(rasterizing)**라고 한다.
+
+<p align="center">
+  <img src="https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-14.gif" />
+</p>
+<figcaption align="center">뷰포트 안쪽을 래스터하는 제일 간단한 래스터화</figcaption>
+
+그러나 최신 브라우저는 **합성(compositing)**이라는 보다 정교한 과정을 거친다. <br />
+
+합성은 웹 페이지의 각 부분을 레이어로 분리해 별도로 래스터화하고 컴포지터 스레드(compositor thread)라고 하는 별도의 스레드에서 웹 페이지로 합성하는 기술이다.
+
+<p align="center">
+  <img src="https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-15.gif" />
+</p>
+<figcaption align="center">웹 페이지의 레이어 위를 움직이는 뷰 포트</figcaption>
+
+스크롤되었을 때 레이어는 이미 래스터화되어 있으므로 새 프레임을 합성하기만 하면 된다. <br />
+따라서 래스터화된 레이어를 컴포지터가 합성(composite)해 스크롤을 부드럽게 처리할 수 있다.
+
+![conposior-thread](https://d2.naver.com/content/images/2019/04/helloworld-201904-sangwoo-ko_3-18.png)
+
+합성의 이점은 메인 스레드와 별개로 작동할 수 있다는 점이다. 컴포지터 스레드는 JavaScript 실행이나 스타일 계산을 기다리지 않아도 된다.
+
+<br />
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
+
+- 최신 브라우저의 내부 살펴보기 1 - CPU, GPU, 메모리 그리고 다중 프로세스 아키텍처 https://d2.naver.com/helloworld/2922312
+- 최신 브라우저의 내부 살펴보기 2 - 내비게이션 과정에서 일어나는 일 https://d2.naver.com/helloworld/9274593
+- 최신 브라우저의 내부 살펴보기 3 - 렌더러 프로세스의 내부 동작 https://d2.naver.com/helloworld/5237120
+- Inside look at modern web browser (part 1) https://developer.chrome.com/blog/inside-browser-part1/
+- Inside look at modern web browser (part 2) https://developer.chrome.com/blog/inside-browser-part2/
+- Inside look at modern web browser (part 3) https://developer.chrome.com/blog/inside-browser-part3/
+
+</div>
+</details>
