@@ -1,6 +1,6 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'so-gooooooooood!',
+  title: 'so-gooooood!',
   author: 'so',
   headerTitle: '',
   description: '안녕@ 반가워!',
