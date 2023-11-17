@@ -6,7 +6,7 @@ const siteMetadata = {
   description: '안녕@ 반가워!',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://hi-so-blog.vercel.app/',
+  siteUrl: 'https://sos-code.vercel.app/',
   siteRepo: 'https://github.com/ansso8430/hello-so-world',
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/banner.png',
