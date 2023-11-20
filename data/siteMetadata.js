@@ -7,7 +7,7 @@ const siteMetadata = {
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://sos-code.vercel.app/',
-  siteRepo: 'https://github.com/ansso8430/hello-so-world',
+  siteRepo: 'https://github.com/ansso8430/so-blog',
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/banner.png',
   // mastodon: 'https://mastodon.social/@mastodonuser',
