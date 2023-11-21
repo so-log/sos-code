@@ -200,3 +200,66 @@ console.log(str);
 <br />
 
 ## Closure
+
+> “A closure is the combination of a function and the lexical environment within which that function was declared.” <br />
+> 클로저는 함수와 그 함수가 선언됐을 때의 렉시컬 환경(Lexical environment)과의 조합이다.
+
+```
+const x = 1;
+
+function outerFunc() {
+
+    const x = 10;
+    const innerFunc  = function () {
+        console.log(x); // 10
+    };
+
+    return innerFunc();
+}
+
+/**
+ *  함수 outerFunc를 호출하면 내부 함수 innerFunc가 반환된다.
+ *  그리고 함수 outerFunc의 실행 컨텍스트는 소멸한다.
+ */
+const inner = outerFunc();
+
+inner(); // 10
+
+console.log(x) // 1
+
+```
+
+- outerFunc가 제거 되어 변수 x에 접근할수 없어 보이지만 지역 변수 x인 10을 반환하고 있다. >> 클로저
+- 클로저는 자신이 생성될 때의 환경(Lexical environment)을 기억하는 함수다.
+- 콜스택에서 어떤 함수의 실행컨텍스트가 제거되었다고 해서 실행컨텍스트의 렉시컬 환경까지 소멸하는 것은 아니다.
+
+**외부함수가 이미 반환되었어도 이를 필요로 하는 내부함수가 존재하는 경우 계속 유지된다.**
+
+<p align="center">
+  <img src="https://poiemaweb.com/img/closure.png" />
+</p>
+<figcaption align="center">실행 컨텍스트의 활성 객체(Activation object)와 클로저</figcaption>
+
+### 클로저의 조건 2가지
+
+1. **생명주기가 종료**한 외부함수의 변수를 참조하면서 <br />
+   콜스택에서 제거되었다.
+1. **외부함수보다 오래 생존**하는 함수 <br />
+   외부함수가 반환해준 함수
+
+<br />
+
+_클로저의 활용 더 알아보기!_ - [Closure](https://poiemaweb.com/js-closure#2-%ED%81%B4%EB%A1%9C%EC%A0%80%EC%9D%98-%ED%99%9C%EC%9A%A9)
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
+
+- What is an Execution Context? https://blog.bitsrc.io/understanding-execution-context-and-execution-stack-in-javascript-1c9ea8642dd0
+- 변수의 유효범위와 클로저 https://ko.javascript.info/closure
+- 클로저 https://poiemaweb.com/js-closure
+
+</div>
+</details>
