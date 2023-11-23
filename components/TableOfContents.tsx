@@ -52,11 +52,11 @@ const TableOfContents = ({ toc }) => {
               <li
                 key={item.url}
                 className={cn(
-                  'hover:text-accent-foreground list-none text-sm font-bold transition-colors duration-200 ease-in-out',
+                  'list-none text-sm font-bold transition-colors duration-200 ease-in-out hover:text-primary-500',
                   item.depth === 3 && 'ml-6 font-normal',
                   item.depth === 4 && 'ml-8 font-normal',
                   item.depth === 5 && 'ml-10 font-normal',
-                  activeSlug === item.url && 'text-accent-foreground'
+                  activeSlug === item.url && 'text-primary-500'
                 )}
               >
                 <Link href={`${item.url}`}>{item.value}</Link>
