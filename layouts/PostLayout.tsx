@@ -167,7 +167,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
           </div>
         </article>
       </div>
-      <aside className="fixed right-8 top-64 hidden lg:block">
+      <aside className="fixed right-8 top-60 hidden lg:block">
         <TableOfContents toc={toc} />
       </aside>
     </SectionContainer>

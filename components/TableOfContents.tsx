@@ -44,10 +44,10 @@ const TableOfContents = ({ toc }) => {
   }, [toc])
 
   return (
-    <div className="bg-card text-card-foreground sticky mb-4 rounded-lg border lg:w-auto">
-      <div className="grid gap-4 p-6 pt-0">
+    <div className="sticky">
+      <div className="grid">
         <nav className="flex items-center self-start" aria-label="Table of Contents">
-          <ol className="list-none space-y-3">
+          <ol className="list-none space-y-2.5">
             {toc.map((item) => (
               <li
                 key={item.url}
