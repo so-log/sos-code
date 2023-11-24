@@ -1,9 +1,9 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'so-gooooood!',
+  title: `so's code`,
   author: 'so',
   headerTitle: '',
-  description: '안녕@ 반가워!',
+  description: '@sos-code #F7716A',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://sos-code.vercel.app/',
