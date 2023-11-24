@@ -154,19 +154,21 @@ function foo() {
 ## 실행 컨텍스트의 실행 순서
 
 ```
+
 const str = '안녕';
 
 function outer() {
   function inner() {
-    const greeting = '하이';
-    console.log(greeting);
-    console.log(str);
+    const greeting = 'hi';
+    console.log(greeting); // hi
+    console.log(str);   // 안녕
   }
   inner();
 }
 outer();
 
-console.log(str);
+console.log(str); // 안녕
+
 ```
 
 1. 전역 컨텍스트 생성
@@ -199,57 +201,76 @@ console.log(str);
 
 <br />
 
-## Closure
-
-> “A closure is the combination of a function and the lexical environment within which that function was declared.” <br />
-> 클로저는 함수와 그 함수가 선언됐을 때의 렉시컬 환경(Lexical environment)과의 조합이다.
+## inner함수를 반환하는 outer함수를 만든다면?
 
 ```
-const x = 1;
 
-function outerFunc() {
+const str = '안녕';
 
-    const x = 10;
-    const innerFunc  = function () {
-        console.log(x); // 10
-    };
+function outer() {
+const str = 'hi';
 
-    return innerFunc();
+  const inner = fuction () {
+    console.log(str);
+  }
+
+  return inner();
 }
 
-/**
- *  함수 outerFunc를 호출하면 내부 함수 innerFunc가 반환된다.
- *  그리고 함수 outerFunc의 실행 컨텍스트는 소멸한다.
- */
-const inner = outerFunc();
+const innerFunc = outer();
 
-inner(); // 10
+innerFunc(); // hi
 
-console.log(x) // 1
+console.log(str)  // 안녕
 
 ```
 
-- outerFunc가 제거 되어 변수 x에 접근할수 없어 보이지만 지역 변수 x인 10을 반환하고 있다. >> 클로저
-- 클로저는 자신이 생성될 때의 환경(Lexical environment)을 기억하는 함수다.
-- 콜스택에서 어떤 함수의 실행컨텍스트가 제거되었다고 해서 실행컨텍스트의 렉시컬 환경까지 소멸하는 것은 아니다.
+1. 전역 컨텍스트 생성
 
-**외부함수가 이미 반환되었어도 이를 필요로 하는 내부함수가 존재하는 경우 계속 유지된다.**
+   - environment Record : `{ str, outer }`
+   - outer Environment Reference : null
 
-<p align="center">
-  <img src="https://poiemaweb.com/img/closure.png" />
-</p>
-<figcaption align="center">실행 컨텍스트의 활성 객체(Activation object)와 클로저</figcaption>
+2. outer( ) 함수 실행 -> 전역 컨텍스트 중단, outer 실행 컨텍스트 생성, outer 실행 컨텍스트 활성화
 
-### 클로저의 조건 2가지
+   - environment Record : `{ str, inner }`
+   - outer Environment Reference : `{ GLOBAL, { a, outer }}`
 
-1. **생명주기가 종료**한 외부함수의 변수를 참조하면서 <br />
-   콜스택에서 제거되었다.
-1. **외부함수보다 오래 생존**하는 함수 <br />
-   외부함수가 반환해준 함수
+3. inner( ) 반환 후 outer( ) 종료, outer 실행 컨텍스트 콜스택에서 제거, 전역 컨텍스트 활성화
+
+4. innerFunc에 outer( ) 할당, innerFunc( ) 호출
+
+5. inner( ) 함수 실행 -> 전역 컨텍스트 중단
+
+6. inner 실행 컨텍스트 생성
+
+   - environment Record : `{  }`
+   - outer Environment Reference : `{ outer, { inner }}`
+
+7. log(str) 실행 - 현재 inner에 없음 > 상위로 이동 > outer에 있는 str 출력
+
+8. inner( ) 종료 > inner 실행 컨텍스트 콜스택에서 제거, 전역 컨텍스트 활성화
+
+9. log(str) 실행 - 전역 environment Record에 있는 str 출력
+
+10. 모든 코드의 실행 종료 > 전역 컨텍스트 콜스택에서 제거 > 종료
 
 <br />
 
-_클로저의 활용 더 알아보기!_ - [Closure](https://poiemaweb.com/js-closure#2-%ED%81%B4%EB%A1%9C%EC%A0%80%EC%9D%98-%ED%99%9C%EC%9A%A9)
+**실행순서 중 6,7번을 보면 outer함수는 종료되어 실행 컨텍스트가 콜스택에서 제거가 되었는데(3번 과정) <br />
+어떻게 outer함수를 참조할 수 있을까?**
+
+> outer 함수의 렉시컬 환경은 inner 함수에 의해 참조되고 있고 inner 함수는 전역 변수 innerFunc에 의해 참조되고 있으므로 가비지 컬렉션의 대상이 되지 않기 때문이다. 가비지 컬렉터는 누군가가 참조하고 있는 메모리 공간을 함부로 해제하지 않는다. <br />
+> 정재남, 코어자바스크립트
+
+위처럼 inner와 같은 함수를 우리는 **클로저**라고 부른다.
+
+클로저를 사용하면 외부함수의 실행 컨텍스트가 스택에서 제거되어도 내부함수에 있는 변수에 접근할 수 있다.
+
+<br />
+
+_클로저에 대해 다음 post에서 더 자세히 알아보자!_ - [Closure](https://sos-code.vercel.app/blog/closure)
+
+<br />
 
 <details>
 <summary>출처</summary>
@@ -258,8 +279,8 @@ _클로저의 활용 더 알아보기!_ - [Closure](https://poiemaweb.com/js-clo
 _이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
 
 - What is an Execution Context? https://blog.bitsrc.io/understanding-execution-context-and-execution-stack-in-javascript-1c9ea8642dd0
-- 변수의 유효범위와 클로저 https://ko.javascript.info/closure
-- 클로저 https://poiemaweb.com/js-closure
+- 실행컨텍스트란? https://velog.io/@edie_ko/js-execution-context
+- 자바스크립트의 스코프와 클로저 https://meetup.nhncloud.com/posts/86
 
 </div>
 </details>
