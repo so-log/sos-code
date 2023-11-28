@@ -1,7 +1,7 @@
 ---
 title: 'React Portal로 Modal 생성하기'
-date: '2023-11-27'
-lastmod: '2023-11-27'
+date: '2023-11-28'
+lastmod: '2023-11-28'
 tags: ['react', 'study']
 draft: false
 summary: 'React로 Modal을 생성할 때 Portal을 사용하는 방법에 대해 알아보자.'
@@ -60,7 +60,7 @@ export default App
 
 ```
 
-1. Modal.js
+2. Modal.js
 
 ```
 import React from 'react'
@@ -103,7 +103,9 @@ export default Modal
 
 ```
 
-이미지 추가!
+<p align="center">
+  <img src="/static/images/portal/modal.jpg" />
+</p>
 
 아무리 모달의 z-indx가 1000이여도 부모의 z-index가 1이여서 2인 div에 먹히지 않는다.
 이런 문제를 해결하려고 나온게 Portal이다.
@@ -155,6 +157,8 @@ export default Modal
 
 중첩된 자식 요소에서 이벤트가 발생할 때 그 이벤트가 부모로 전달되는 것이다.
 
+### portal과 이벤트 버블링
+
 portal이 DOM 트리의 어디에도 존재할 수 있다 하더라도 모든 다른 면에서 일반적인 React 자식처럼 동작한다.
 이는 DOM 트리에서의 위치에 상관없이 portal은 여전히 React 트리에 존재하기 때문이다.
 
@@ -168,7 +172,12 @@ portal이 DOM 트리의 어디에도 존재할 수 있다 하더라도 모든 �
 ```
 
 모달을 클릭하면 이벤트가 상위로 전달되어서 상위 요소인 div에도 이벤트가 전달된다.
-따라서 모달을 클릭했는데 콘솔이 찍힌다.
+
+<p align="center">
+  <img src="/static/images/portal/last.jpg" />
+</p>
+
+이처럼 모달을 클릭했는데 콘솔이 찍힌다.
 
 <br />
 
