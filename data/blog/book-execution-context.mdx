@@ -18,6 +18,7 @@ canonicalUrl: https://sos-code.vercel.app/blog/book-execution-context
 ### 스택stack과 큐queue
 
 p37 그림 2-2
+![stack-queue](https://velog.velcdn.com/images%2Fmodolee%2Fpost%2Fdba8ac59-e72e-405b-82ea-0be9f9081c53%2Fimage.png)
 
 환경정보를 모아 > 컨텍스트 > 콜 스택 : 환경과 순서를 보장
 '동일한 환경' === 실행컨텍스트를 구성
@@ -27,9 +28,28 @@ p37 그림 2-2
 3. **함수 실행**
 
 함수 실행...
-p38
+p38 예제 2-1
+
+```
+
+// ----------------------------------(1)
+var a = 1
+function outer() {
+  function inner() {
+    console.log(a) // undefined
+    var a = 3
+  }
+
+  inner() // ------------------------(2)
+  console.log(a) // 1
+}
+outer() // ------------------------(3)
+console.log(a) // 1
+
+```
 
 p40 그림 2-4
+![execution-context](https://velog.velcdn.com/images%2Fhyeonze%2Fpost%2Fe6f70a47-0cad-49d6-aa2f-7446ff440275%2F%E1%84%89%E1%85%B3%E1%84%8F%E1%85%B3%E1%84%85%E1%85%B5%E1%86%AB%E1%84%89%E1%85%A3%E1%86%BA%202022-03-20%20%E1%84%8B%E1%85%A9%E1%84%92%E1%85%AE%205.31.32.png)
 
 ### VariableEnvironment
 
@@ -37,6 +57,8 @@ p40 그림 2-4
 VariableEnvironment는 LexicalEnvironment와 같지만 최초 실행시의 스냅샷을 유지한다.
 
 > 실행컨텍스트를 생성할 때 VariableEnvironment에 정보를 먼저 담은 다음, 이를 그대로 복사해서 LexicalEnvironment를 만들고 이후 LexicalEnvironment를 주로 활용한다.
+
+따라서 LexicalEnvironment는 함수 실행 도중에 변경되는 사항이 즉시 반영되는 반면 VariableEnvironment는 초기 상태를 유지한다.
 
 ### LexicalEnvironment
 
@@ -54,22 +76,160 @@ environmentRecord와 outer-EnvironmentReference로 구성
     environmentRecord에는 매게변수의 이름, 함수 선언, 변수명 등이 담긴다.
     p44 예제 2-4 > 예제 2-2 에서 1, undefined, 2가 아닌 1, 1, 2가 출력되는 이유
 
+    예제 2-2
+
+    ```
+
+    function a (x) { // 수집 대상 1 (매개 변수)
+        console.log(x); // (1)
+        var x; // ------- 수집 대상 2 (변수 선언)
+        console.log(x); // (2)
+        var x = 2; // --- 수집 대상 3 (변수 선언)
+        console.log(x); // (3)
+    }
+
+    a(1);
+
+    ```
+
+    예제 2-4
+
+    ```
+
+    function a () {
+        var x; // -------- 수집 대상 1(매개 변수)의 변수 선언 부분
+        var x; // -------- 수집 대상 2의 변수 선언 부분
+        var x; // -------- 수집 대상 3의 변수 선언 부분
+        x = 1; // -------- 수집 대상 1의 할당 부분
+        console.log(x); // (1)
+        console.log(x); // (2)
+        x = 2; // -------- 수집 대상 3의 할당 부분
+        console.log(x); // (3)
+    }
+
+    a();
+
+    ```
+
     그럼 함수를 호이스팅 한다면?
-    p47 예제 2-7 > 예제 2-5 에서 undefined 또는 error, 'bbb', fuction b 가 아닌 fuction b, 'bbb', 'bbb' 가 출력되는 이유 \*함수 선언 전체를 끌어올린다.
+    p47 예제 2-7 > 예제 2-5 에서 undefined 또는 error, 'bbb', fuction b 가 아닌 fuction b, 'bbb', 'bbb' 가 출력되는 이유 **함수 선언 전체를 끌어올린다.**
+
+    예제 2-5
+
+    ```
+    function a() {
+        console.log(b); // (1)
+        var b = 'bbb'; // 수집 대상 1 (변수 선언)
+        console.log(b); // (2)
+        function b() {} // 수집 대상 2 (함수 선언)
+        console.log(b); // (3)
+    }
+
+    a();
+
+    ```
+
+    예제 2-7
+
+    ```
+
+    function a() {
+        var b; // ------------------- 수집 대상 1(변수 선언) 의 선언 부분
+        function b() {} // ---------- 수집 대상 2(함수 선언) 의 전체
+        // var b = function b() {} // (*) 위의 코드를 이렇게 표현도 가능
+        console.log(b); // ---------- (1)
+        b = 'bbb'; // --------------- 수집 대상 1의 할당 부분
+        console.log(b); // ---------- (2)
+        console.log(b); // ---------- (3)
+    }
+
+    a();
+
+    ```
 
     ## 함수 선언문과 함수 표현식
 
     p48 예제 2-8
 
+    ```
+
+    function a() { /* ... */ } // 함수 선언문. 함수명 a가 곧 변수명
+    a(); // 실행 ok
+
+    var b = function () { /* ... */ } // (익명) 함수 표현식. 변수명 b가 곧 함수명
+    b(); // 실행 ok
+
+    var c = function d() { /* ... */ } // 기명 함수 표현식. 변수명은 c, 함수명은 d
+    c(); // 실행 ok
+    d(); // 에러!
+
+    ```
+
     ! 기명 함수 표현식은 외부에서 함수명으로 함수를 호출할 수 없음 오직 함수 내부에서만 함수명으로 접근할 수 있음 > 재귀함수를 호출하는 용도
     근데 굳이...
 
-    p49 예제 2-10 함수 선언문과 함수 표현식의 호이스팅 차이 \*함수 선언문은 전체를 호이스팅, 함수 표현식은 변수 선언부만 호이스팅
+    예제 2-9 원본
+
+    ```
+
+    console.log(sum(1, 2));
+    console.log(multiply(3, 4));
+
+    function sum(a, b) { // 함수 선언문 sum
+        return a + b;
+    }
+
+    var multiply = function (a, b) { // 함수 표현식 multiply
+        return a * b;
+    };
+
+    ```
+
+    p49 예제 2-10 함수 선언문과 함수 표현식의 호이스팅 차이
+
+    ```
+
+    var sum = function sum(a, b) { // 함수 선언문은 전체를 호이스팅 한다.
+        return a + b;
+    };
+
+    var multiply;    // 변수는 선언부만 끌어올린다.
+
+    console.log(sum(1, 2));
+    console.log(multiply(3, 4));
+
+    multiply = function (a, b) {      // 변수의 할당부는 원래 자리에 남겨둔다.
+        return a * b;
+    };
+
+    ```
+
+    **함수 선언문은 전체를 호이스팅, 함수 표현식은 변수 선언부만 호이스팅**
     따라서 함수 표현식은 error가 나옴 변수만 끌어올려지고 할당 부분은 원래 자리에 남겨져 있기 때문
 
     "선언한 후에야 호출할 수 있다."
 
     p51 예제 2-11 같은 함수명의 함수 선언문을 뒤늦게 추가함 > 두개 다 끌어올려짐 > 뒤늦게 작성한 함수로 덮어쓰여짐 > 이전에 작성했던 코드의 결과값이 달라짐 > 에러 찾기 어려움
+
+    ```
+
+    console.log(sum(3, 4));
+
+    function sum(x, y) {
+        return x + y;
+    }
+
+    var a = sum(1, 2);
+    console.log(a);
+
+    function sum(x, y) { // 뒤늦게 추가 한 함수
+        return `${x} + ${y} = ${x + y}`;
+    }
+
+    var c = sum(1, 2);
+        console.log(c);
+
+    ```
 
     > 함수 표현식이 안전하다.
 
@@ -77,7 +237,54 @@ environmentRecord와 outer-EnvironmentReference로 구성
     스코프란 식별자에 대한 유효범위이다. 식별자의 유효범위를 안에서부터 바깥으로 차례로 검색해나가는 것을 스코프 체인이라고 한다.
     그리고 이를 가능하게 하는 것이 outerEnvironmentReference이다.
 
-        ## 스코프 체인
-        outerEnvironmentReference는 현재 호출된 함수가 선언될 당시의 LexicalEnvironment를 참조한다.
-        "선언할 당시" === 콜스택상에서 어던 실행 컨텍스트가 활성화된 상태일때
-        따라서 자신이 선언될 당시의 LexicalEnvironment를 참조하기 때문에 가장 가까운 요소부터 차례대로만 접근할 수 있고 다른 순서로 접근할 수 없다. > 무조건 스코프 체인 상에서 가장 먼저 발견된 식별자에만 접근이 가능하다.
+    ## 스코프 체인
+
+    outerEnvironmentReference는 현재 호출된 함수가 선언될 당시의 LexicalEnvironment를 참조한다.
+    "선언할 당시" === 콜스택상에서 어던 실행 컨텍스트가 활성화된 상태일때
+    따라서 자신이 선언될 당시의 LexicalEnvironment를 참조하기 때문에 가장 가까운 요소부터 차례대로만 접근할 수 있고 다른 순서로 접근할 수 없다. > 무조건 스코프 체인 상에서 가장 먼저 발견된 식별자에만 접근이 가능하다.
+
+    예제 2-13
+
+    ```
+
+    var a = 1;
+        var outer = function() {
+            var inner = function() {
+                console.log(a);
+                var a = 3;
+            };
+            inner();
+            console.log(a);
+        }
+        outer();
+        console.log(a);
+
+    ```
+
+    ![scope](https://velog.velcdn.com/images%2Fmodolee%2Fpost%2F51dc5964-b8af-45b3-9af4-e4708e2f2cc0%2Fimage.png)
+
+    **변수 은닉화**
+    식별자 a를 전역 공간에서도 선언, inner 함수 내부에서도 선언했을 때, inner() 내부에서 a 에 접근하려고 하면 무조건 inner 스코프의 LexicalEnvironment부터 검색할 수 밖에 없다.
+    즉, 전역공간에서 선언한 동일한 이름의 a 변수에는 접근 할 수 없다.
+
+    ## 전역변수와 지역변수
+
+    전역공간에서 선언한 변수는 전역 변수라고 한다. 함수 내부에서 선언한 변수는 지역변수이다.
+
+    앞에서 얘기한 sum함수도 전역변수이다. 이때 함수선언문을 함수 표현식으로 고치는 것보다 지역변수로 만들면 훨씬 안전하게 사용할 수 있다.
+
+3.  this
+
+    thisBinding에는 this로 지정된 객체가 저장된다. 실행컨텍스트 활성화 당시에 this가 지정되지 않은 경우 this에는 전역 객체가 저장된다.
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 코어 자바스크립트 책을 읽고 2장 실행 컨텍스트를 정리한 내용을 작성한 글입니다._
+
+- 사진 출처 https://velog.io/@modolee/core-javascript-02
+- 사진 출처 https://velog.io/@chyoon0512/JS-%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%83%80%EC%9E%85
+
+</div>
+</details>
