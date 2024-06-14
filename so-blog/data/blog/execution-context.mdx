@@ -1,0 +1,286 @@
+---
+title: 'Execution context'
+date: '2023-11-16'
+lastmod: '2023-11-16'
+tags: ['javascript', 'web', 'study']
+draft: false
+summary: '자바스크립트 코드가 실행되는 환경인 실행 컨텍스트를 바탕으로 호이스팅과 클로저가 어떤 연관관계가 있는지 알아보자.'
+layout: PostLayout
+canonicalUrl: https://sos-code.vercel.app/blog/execution-context
+---
+
+# 실행 컨텍스트(Execution Context)
+
+함수가 실행되면 실행 컨텍스트가 생성되고 자바스크립트 엔진에 있는 콜 스택에 쌓인다. 그리고 가장 위에 있는 코드를 실행하면서(LIFO), 전체 코드의 환경과 순서를 보장하게 된다. <br />
+
+- 자바스크립트 엔진이 script를 확인하면서 전역 컨텍스트를 생성하고 콜스택에 push <br />
+- script를 읽다가 함수 호출을 발견하면 함수의 실행 컨텍스트를 스택에 push
+
+식별자(변수, 함수, 클래스 등의 이름)를 등록하고 관리하는 스코프와 코드 실행 순서 관리를 구현한 내부 매커니즘이다.
+
+<br />
+
+### ✅ 전역 실행 컨텍스트 (global execution context)
+
+모든 자바스크립트 코드는 이 안에서 실행되고 단 하나만 자동으로 생성이 된다.
+함수 밖에 있는 코드는 모두 여기에 있다.
+
+### ✅ 함수 실행 컨텍스트 (functional execution context)
+
+함수 내에 존재하는 코드, 함수가 실행되거나 호출 될때 생성된다.
+
+<br />
+
+## 실행 컨텍스트의 구조
+
+실행 컨텍스트는 **LexicalEnvironment 컴포넌트**와 **variableEnvironment 컴포넌트**로 구성된다.
+
+### 함수 호출 > 함수 코드 평가 순서
+
+1. 함수 실행 컨텍스트 생성
+
+1. Lexical Environment 생성 <br />
+   2-1. environment Record 생성 <br />
+   2-2. This Binding <br />
+   2-3. outer Environment Reference 결정
+
+<br />
+
+# Lexical Environment (어휘적 환경)
+
+## environment Record
+
+함수가 실행되기 전 관련된 코드의 식별자 정보 **(매개변수의 이름, 함수 선언, 변수명 등)** 가 저장된다.
+
+이 때문에 변수명, 매개변수 이름 등을 이미 알고 있게 된다. 💡 **호이스팅**
+
+<br />
+
+## Hosting
+
+- 선언 전에 호출해도 error 나지 않고 undefined가 뜬다.
+
+```
+console.log(hi); // undefined
+
+var hi = 'sohee';
+
+console.log(hi); // sohee
+```
+
+- **호이스팅** : 선언문이 마치 최상단으로 끌어올려진 듯한 현상
+- environment Record에 미리 기록해두었기 때문에 error가 나지 않는다.
+
+🔍 실행 순서
+
+1. 전역 실행 컨텍스트 생성 > 콜 스택
+2. 전체 코드 스캔 > 선언
+3. Environment Record에 새로운 식별자 hi 기록
+4. `var`로 선언한 값 undefined으로 초기화
+
+<br />
+
+### 변수 호이스팅(Varible Hosting) - var & let/const
+
+```
+console.log(hi); // Reference Error
+
+const hi = 'sohee';
+
+console.log(hi); // sohee
+```
+
+- `var`와 다르게 `const`로 선언하면 값을 초기화 하지 않는다.
+- `let`이나 `const`를 이용하면 선언 라인 이전에 식별자를 참조할 수 없다 > **일시적 사각지대(Temporal Dead Zone)**
+
+<br />
+
+### 함수 호이스팅 (Fuction Hosting)
+
+1. 함수 표현식
+
+```
+foo(); // type Error!
+
+var foo = () => {
+	console.log('hello');
+};
+```
+
+- undefined로 초기화되어 있는 상태, 함수처럼 호출될 수 있는 데이터타입이 아니다. > Type Error
+
+```
+foo(); // Reference Error!
+
+var foo = () => {
+	console.log('hello');
+};
+```
+
+- const는 값을 초기화 하지 않음, 참조할 수 있는게 없다 > Reference Error
+
+<br />
+
+2. 함수 선언식
+
+```
+foo(); // hello
+
+function foo() {
+	console.log('hello');
+};
+```
+
+- 선언과 동시에 함수가 생성, 선언 라인 이전에 함수를 사용할 수 있다.
+
+<br />
+<br />
+
+## outer Environment Reference
+
+상위 스코프를 가르킨다. `[[environment]]` 같은 선상의 environment record가 아닌 바깥에 있는 environment record를 참조한다.
+따라서 현재 환경에서 변수를 찾을 수 없다면 외부 환경에서 찾는다.
+
+💡 **스코프 체이닝**
+식별자의 유효범위를 안에서부터 바깥으로 차례로 검색해 나가는 것을 말한다.
+
+💡 **변수 은닉화**
+같은 식별자라 하더라도 함수 내부의 값에 의해 전역 공간에 있는 동일한 값이 가려지는 현상을 말한다.
+
+> 실행 컨텍스트 스택이 코드의 실행 순서를 관리한다면 렉시컬 환경은 스코프와 식별자를 관리한다.
+
+<br />
+
+## 실행 컨텍스트의 실행 순서
+
+```
+
+const str = '안녕';
+
+function outer() {
+  function inner() {
+    const greeting = 'hi';
+    console.log(greeting); // hi
+    console.log(str);   // 안녕
+  }
+  inner();
+}
+outer();
+
+console.log(str); // 안녕
+
+```
+
+1. 전역 컨텍스트 생성
+
+   - environment Record : `{ str, outer }`
+   - outer Environment Reference : null
+
+2. outer( ) 함수 실행 -> 전역 컨텍스트 중단, outer 실행 컨텍스트 생성
+
+   - environment Record : `{ inner }`
+   - outer Environment Reference : `{ GLOBAL, { a, outer }}`
+
+3. inner( ) 함수 실행 -> outer 실행 컨텍스트 중단
+
+4. inner 실행 컨텍스트 생성
+
+   - environment Record : `{ greeting }`
+   - outer Environment Reference : `{ outer, { inner }}`
+
+5. log(greeting) 실행 - environment Record에 있는 greeting 출력 <br />
+   log(str) 실행 - 현재 outer에 없음 > 상위로 이동 > 전역 environment Record에 있는 str 출력
+
+6. inner( ) 종료 > inner 실행 컨텍스트 콜스택에서 제거, outer 실행 컨텍스트 활성화
+
+7. outer( ) 종료 > outer 실행 컨텍스트 콜스택에서 제거, 전역 컨텍스트 활성화
+
+8. log(str) 실행 - 전역 environment Record에 있는 str 출력
+
+9. 모든 코드의 실행 종료 > 전역 컨텍스트 콜스택에서 제거 > 종료
+
+<br />
+
+## inner함수를 반환하는 outer함수를 만든다면?
+
+```
+
+const str = '안녕';
+
+function outer() {
+const str = 'hi';
+
+  const inner = fuction () {
+    console.log(str);
+  }
+
+  return inner();
+}
+
+const innerFunc = outer();
+
+innerFunc(); // hi
+
+console.log(str)  // 안녕
+
+```
+
+1. 전역 컨텍스트 생성
+
+   - environment Record : `{ str, outer }`
+   - outer Environment Reference : null
+
+2. outer( ) 함수 실행 -> 전역 컨텍스트 중단, outer 실행 컨텍스트 생성, outer 실행 컨텍스트 활성화
+
+   - environment Record : `{ str, inner }`
+   - outer Environment Reference : `{ GLOBAL, { a, outer }}`
+
+3. inner( ) 반환 후 outer( ) 종료, outer 실행 컨텍스트 콜스택에서 제거, 전역 컨텍스트 활성화
+
+4. innerFunc에 outer( ) 할당, innerFunc( ) 호출
+
+5. inner( ) 함수 실행 -> 전역 컨텍스트 중단
+
+6. inner 실행 컨텍스트 생성
+
+   - environment Record : `{  }`
+   - outer Environment Reference : `{ outer, { inner }}`
+
+7. log(str) 실행 - 현재 inner에 없음 > 상위로 이동 > outer에 있는 str 출력
+
+8. inner( ) 종료 > inner 실행 컨텍스트 콜스택에서 제거, 전역 컨텍스트 활성화
+
+9. log(str) 실행 - 전역 environment Record에 있는 str 출력
+
+10. 모든 코드의 실행 종료 > 전역 컨텍스트 콜스택에서 제거 > 종료
+
+<br />
+
+**실행순서 중 6,7번을 보면 outer함수는 종료되어 실행 컨텍스트가 콜스택에서 제거가 되었는데(3번 과정) <br />
+어떻게 outer함수를 참조할 수 있을까?**
+
+> outer 함수의 렉시컬 환경은 inner 함수에 의해 참조되고 있고 inner 함수는 전역 변수 innerFunc에 의해 참조되고 있으므로 가비지 컬렉션의 대상이 되지 않기 때문이다. 가비지 컬렉터는 누군가가 참조하고 있는 메모리 공간을 함부로 해제하지 않는다. <br />
+> 정재남, 코어자바스크립트
+
+위처럼 inner와 같은 함수를 우리는 **클로저**라고 부른다.
+
+클로저를 사용하면 외부함수의 실행 컨텍스트가 스택에서 제거되어도 내부함수에 있는 변수에 접근할 수 있다.
+
+<br />
+
+_클로저에 대해 다음 post에서 더 자세히 알아보자!_ - [Closure](https://sos-code.vercel.app/blog/closure)
+
+<br />
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
+
+- What is an Execution Context? https://blog.bitsrc.io/understanding-execution-context-and-execution-stack-in-javascript-1c9ea8642dd0
+- 실행컨텍스트란? https://velog.io/@edie_ko/js-execution-context
+- 자바스크립트의 스코프와 클로저 https://meetup.nhncloud.com/posts/86
+
+</div>
+</details>

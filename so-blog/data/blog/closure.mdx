@@ -1,0 +1,151 @@
+---
+title: 'Closure'
+date: '2023-11-24'
+lastmod: '2023-11-24'
+tags: ['javascript', 'web', 'study']
+draft: false
+summary: '자바스크립트 코드가 실행되는 환경인 실행 컨텍스트를 바탕으로 클로저에 대해 더 자세히 알아보자.'
+layout: PostLayout
+canonicalUrl: https://sos-code.vercel.app/blog/closure
+---
+
+## Closure
+
+> “A closure is the combination of a function and the lexical environment within which that function was declared.” <br />
+> 클로저는 함수와 그 함수가 선언됐을 때의 렉시컬 환경(Lexical environment)과의 조합이다.
+
+```
+const x = 1;
+
+function outerFunc() {
+
+    const x = 10;
+    const innerFunc  = function () {
+        console.log(x); // 10
+    };
+
+    return innerFunc();
+}
+
+/**
+ *  함수 outerFunc를 호출하면 내부 함수 innerFunc가 반환된다.
+ *  그리고 함수 outerFunc의 실행 컨텍스트는 소멸한다.
+ */
+const inner = outerFunc();
+
+inner(); // 10
+
+console.log(x) // 1
+
+```
+
+- outerFunc가 제거 되어 변수 x에 접근할수 없어 보이지만 지역 변수 x인 10을 반환하고 있다.
+- 클로저는 자신이 생성될 때의 환경(Lexical environment)을 기억하는 함수다.
+- 콜스택에서 어떤 함수의 실행컨텍스트가 제거되었다고 해서 실행컨텍스트의 렉시컬 환경까지 소멸하는 것은 아니다. 그렇기 때문에 10을 반환할 수 있다.
+
+**외부함수가 이미 반환되었어도 이를 필요로 하는 내부함수가 존재하는 경우 계속 유지된다.** <br />
+이때 내부함수가 외부함수에 있는 변수의 복사본이 아니라 실제 변수에 접근한다는 것에 주의하여야 한다.
+
+이를 그림으로 표현하면 아래와 같다.
+
+<p align="center">
+  <img src="https://poiemaweb.com/img/closure.png" />
+</p>
+<figcaption align="center">실행 컨텍스트의 활성 객체(Activation object)와 클로저</figcaption>
+
+### 클로저의 조건 2가지
+
+1. **생명주기가 종료**한 외부함수의 변수를 참조하면서 <br />
+   콜스택에서 제거되었다.
+1. **외부함수보다 오래 생존**하는 함수 <br />
+   외부함수가 반환해준 함수
+
+<br />
+
+## 클로저의 활용
+
+클로저는 상태를 안전하게 변경하고 유지하기 위해 사용한다. <br />
+
+클로저는 자신이 생성될 때의 환경(Lexical environment)을 기억해야 하므로 메모리 차원에서 손해를 볼 수 있다. 하지만 자바스크립트는 클래스가 없고 전역변수를 기반으로 하기 때문에 변수가 외부에 노출된다.
+따라서 자바스크립트에서는 이 클로저를 이용해서 private한 변수를 만들 수 있다.
+
+### 1씩 증가하는 counter 함수 만들기
+
+```
+function counterFn() {
+  var count = 0;
+
+  return function() {
+    return ++count;
+  };
+}
+
+const counter = counterFn();
+
+console.log(counter()); // 1
+console.log(counter()); // 2
+
+const counter2 = counterFn();
+
+console.log(counter2()); // 1
+```
+
+- counterFn( )이 반환하는 함수는 클로저 함수이다.
+- 변수 count는 자신을 참조하는 함수가 소멸될 때까지 유지된다. >> 초기화되지 않는다.
+
+_클로저의 활용 더 알아보기!_ - [Closure](https://poiemaweb.com/js-closure#2-%ED%81%B4%EB%A1%9C%EC%A0%80%EC%9D%98-%ED%99%9C%EC%9A%A9)
+
+### React Hook에서의 클로저
+
+1. useStae 만들기
+
+```
+function useState(initVal) {
+
+  let _val = initVal; // _val은 useState에 의해 만들어진 지역 변수입니다.
+  const state = () => _val;
+
+  const setState = newVal => {
+    _val = newVal;
+  }
+
+  return [state, setState]
+}
+
+const [count, setCount] = useState(1)
+
+console.log(count) // 1
+
+setCount(2)
+
+console.log(count) // 2
+```
+
+- state(), setState()는 내부 함수이자 클로저입니다.
+- state(), setState()는 부모 함수에 정의된 `_val`를 참조합니다.
+- useState 안에서 선언되는 상태들은 배열에 순서대로 저장된다.
+
+_[번역] 심층 분석: React Hook은 실제로 어떻게 동작할까?_ - [Closure with React Hooks](https://hewonjeong.github.io/deep-dive-how-do-react-hooks-really-work-ko/)
+
+<br />
+
+    2. Hook을 사용하는 조건
+
+    **최상위에서만 Hook을 호출해야한다.**
+
+    컴포넌트 상태값들은 배열에 순서대로 저장 되기 때문에, 반복문, 조건문 혹은 중첩된 함수 내에서 사용하게 되면 순서가 맞지 않게 되어 잘못된 상태를 참조하게 될 수 있다.
+
+<br />
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
+
+- 변수의 유효범위와 클로저 https://ko.javascript.info/closure
+- 클로저 https://poiemaweb.com/js-closure
+- Getting Closure on React Hooks https://www.rinae.dev/posts/getting-closure-on-react-hooks-summary
+
+</div>
+</details>
