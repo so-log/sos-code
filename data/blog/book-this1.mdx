@@ -103,8 +103,8 @@ methodA: function () { console.log(this); },
     }
 };
 
-object.methodA();   // {methodA: f, inner: {...} } ( === obj )
-object.inner.methodB();  // {methodB: F} ( === obj.inner)
+obj.methodA();   // {methodA: f, inner: {...} } ( === obj )
+obj.inner.methodB();  // {methodB: F} ( === obj.inner)
 
 ```
 
