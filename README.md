@@ -1,7 +1,7 @@
 # so-blog
 
-<img src="/public/static/images/avatar.png" />
-<img src="/public/static/images/banner.png" />
+<img src="so-blog/public/static/images/avatar.png" />
+<img src="so-blog/public/static/images/banner.png" />
 
 ### '안녕하세요!
 
