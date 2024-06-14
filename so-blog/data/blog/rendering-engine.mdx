@@ -1,0 +1,124 @@
+---
+title: 'Rendering engine'
+date: '2023-11-13'
+lastmod: '2023-11-13'
+tags: ['javascript', 'web', 'study']
+draft: false
+summary: '브라우저의 주요 구성 요소 중 하나인 렌더링 엔진, 이를 통해 브라우저는 어떻게 동작하는가? 렌더링 엔진의 동작 과정과 웹브라우저를 살펴보자.'
+layout: PostLayout
+canonicalUrl: https://sos-code.vercel.app/blog/Rendering-engine
+---
+
+## Overview
+
+<TOCInline toc={props.toc} exclude="Overview" />
+
+# Processing
+
+**브라우저는 HTML,CSS를 parsing하는 과정을 거쳐 render 할 수 있는 형태인 DOM Tree로 만들고 그려준다.**
+
+## 브라우저가 렌더링 되는 과정
+
+![timestamp-diagram](https://www.w3.org/TR/navigation-timing-2/timestamp-diagram.svg)
+
+여기서 프론트엔드의 역할은 Processing과 Load과정을 최적화하는 것이다.
+
+domContentLoaded 와 loadEventStart의 발생 시점이 **빠를수록**, 그리고 발생 폭이 **좁을수록** 성능이 좋다고 말한다.
+
+### domContentLoaded
+
+- HTML과 CSS 파싱이 끝나는 시점
+- DOM, CSSOM 구성이 끝난 후, 렌더 트리 구성이 준비된 시점
+
+### loadEventStart
+
+-HTML상에 필요한 모든 리소스가 로드된 시점
+
+<br />
+
+현재 개발 패러다임의 변화로 인해 이벤트 발생 시점 가지고는 성능을 판단하기 어렵다.
+
+> SPA(Single Page Application)
+
+초기: 적은 양 HTML load -> 이벤트가 일찍 발생
+-> 사용과정: 많은 스크립트를 실행 -> loading이 느려짐
+
+이로 인해 브라우저 기준 성능 측정보다 사용자 기준의 성능 측정이 더 중요해졌다.
+
+<br />
+
+## 사용자 기준의 성능 측정
+
+**사용자가 콘텐츠를 보는 시점을 기반**
+
+![optimizing-Rendering](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fblog.kakaocdn.net%2Fdn%2FW2lRD%2FbtryfhU8lvr%2FD1ItrsFesgwLddg4rHntx1%2Fimg.png)
+
+둘 다 같은 시점에 이벤트가 발생했다.
+하지만 위는 **점진적으로** 컨텐츠를 보여주고 아래는 **일괄적으로** 보여준다. <br />
+이로 인해 사용자는 점진적 렌더링이 로딩이 더 빠르다고 느낀다.
+
+_로딩 최적화 더 알아보기!_ - [optimizing-Loading](https://seokzin.tistory.com/entry/JavaScript-%EB%A1%9C%EB%94%A9-%EC%B5%9C%EC%A0%81%ED%99%94)
+
+<br />
+<br />
+
+# Rendering-engine
+
+## 브라우저 주요 구성요소
+
+<p align="center">
+  <img src="/static/images/rendering-engine/brower-component.png" />
+  <img src="/static/images/rendering-engine/brower-rendering.png" />
+</p>
+
+- 렌더링 엔진 : 요청한 콘텐츠를 표시. 예를 들어 HTML을 요청하면 HTML과 CSS를 파싱하여 화면에 표시함.
+
+## 렌더링 엔진의 동작과정
+
+<p align="center">
+  <img src="/static/images/rendering-engine/rendering-engine.png" />
+</p>
+
+1. 문서를 읽어 브라우저가 문법을 분석, 코드를 이해한다.
+   `<script>` 태그를 만나면 JS를 해석할 때까지 파싱을 멈춘다
+1. 콘텐츠 트리 내부에서 태그를 DOM노드로 변환한다.
+1. 스타일 정보와 HTML 표시 규칙은 DOM과 CSSOM을 결합하여 "렌더 트리"라고 부르는 또 다른 트리를 생성한다.
+   즉, 어떤 엘리먼트에 어떤 스타일을 적용할 것인지 정해진다
+
+   <p align="center">
+     <img src="https://web.dev/static/articles/critical-rendering-path/render-tree-construction/image/dom-cssom-are-combined-8de5805b2061e_856.png?hl=ko" />
+   </p>
+   <br />
+
+1. 각 요소의 크기와 위치를 계산한다. (Layout 단계)
+   <p align="center">
+     <img src="/static/images/rendering-engine/viewport-layout.png" />
+   </p>
+1. 요소를 실제로 픽셀로 변환하여 그린다. (Paint 단계, Rasterize)
+
+   <p align="center">
+     <img src="/static/images/rendering-engine/viewport-paint.png" />
+   </p>
+   픽셀로 그려진 여러 레이어를 합성한다. (Compositing 단계)
+   <p align="center">
+     <img src="/static/images/rendering-engine/viewport-compositing.png" />
+   </p>
+
+   <br />
+   <br />
+
+_브라우저는 어떻게 동작하는가?_ - [HowBrowsersWork: Behindthescenesofmodernwebbrowsers](https://d2.naver.com/helloworld/59361)
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 The RED : 프론트엔드 Back to the Basics : 지속 가능한 코드작성과 성능 향상법 by 김태곤 강의를 듣고 추가로 공부한 내용을 작성한 글입니다._
+
+- Processing Model https://www.w3.org/TR/navigation-timing-2/#processing-model
+- 로딩 최적화 https://seokzin.tistory.com/entry/JavaScript-%EB%A1%9C%EB%94%A9-%EC%B5%9C%EC%A0%81%ED%99%94
+- 렌더링 트리 생성 https://web.dev/articles/critical-rendering-path/render-tree-construction?hl=ko
+- 브라우저는 어떻게 동작하는가? https://d2.naver.com/helloworld/59361
+
+</div>
+</details>

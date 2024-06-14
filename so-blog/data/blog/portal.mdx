@@ -1,0 +1,193 @@
+---
+title: 'React Portal로 Modal 생성하기'
+date: '2023-11-28'
+lastmod: '2023-11-28'
+tags: ['react', 'study']
+draft: false
+summary: 'React로 Modal을 생성할 때 Portal을 사용하는 방법에 대해 알아보자.'
+layout: PostLayout
+canonicalUrl: https://sos-code.vercel.app/blog/portal
+---
+
+# Portals
+
+Portal은 부모 컴포넌트의 DOM 계층 구조 바깥에 있는 DOM 노드로 자식을 렌더링하는 최고의 방법을 제공한다.
+
+```
+ReactDOM.createPortal(child, container)
+```
+
+첫 번째 인자(child)는 엘리먼트, 문자열, 혹은 fragment와 같은 어떤 종류이든 렌더링할 수 있는 React 자식입니다. 두 번째 인자(container)는 DOM 엘리먼트입니다.
+
+## Portal 없이 모달 생성
+
+1. App.js
+
+```
+import React from 'react'
+import Modal from './Modal'
+
+const modalWrapperStyle = {
+  position: 'relative',
+  zIndex: 1,
+}
+
+const higherIndexWrapperStyle = {
+  position: 'relative',
+  zIndex: 2,
+  backgroudColor: 'blue',
+  padding: '10px',
+}
+
+function App() {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  return (
+    <>
+      <div style={modalWrapperStyle}>
+        <button onClick={() => setIsModalOpen(true)}>모달 열기</button>
+        <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          모달 내용
+        </Modal>
+      </div>
+
+      <div style={higherIndexWrapperStyle}>Z_Index 2</div>
+    </>
+  )
+}
+
+export default App
+
+
+```
+
+2. Modal.js
+
+```
+import React from 'react'
+
+const modalStyle = {
+  postion: 'fixed',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  backgroundColor: '#fff',
+  padding: '50px',
+  zIndex: 1000,
+}
+
+const overlayStyle = {
+  postion: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, .7)',
+  zIndex: 1000,
+}
+
+const Modal = ({ open, onClose, children }) => {
+  if (!open) return null
+
+  return (
+    <>
+      <div style={overlayStyle} />
+      <div style={modalStyle}>
+        {children}
+        <button onClick={onClose}>모달 닫기</button>
+      </div>
+    </>
+  )
+}
+
+export default Modal
+
+```
+
+<p align="center">
+  <img src="/static/images/portal/modal.jpg" />
+</p>
+
+아무리 모달의 z-indx가 1000이여도 부모의 z-index가 1이여서 2인 div에 먹히지 않는다.
+이런 문제를 해결하려고 나온게 Portal이다.
+
+## Portal로 모달 생성
+
+1. Container 생성
+
+```
+public/index.html
+
+<body>
+  <div id="root"></div>
+  <div id="portal"></div>
+</body>
+```
+
+1. createPortal 사용
+
+```
+src/helpers/Portal.js
+
+import ReactDom from "react-dom";
+
+const Modal = ({ open, children, onClose }) => {
+    if (!open) return null;
+
+    return ReactDom.createPortal(
+        <>
+            <div style={overlayStyle} />
+            <div style={modalStyle}>
+                {children}
+                <button onClick={onClose}>모달 닫기</button>
+            </div>
+        </>
+        document.getElementById('portal')
+    )
+}
+
+export default Modal
+```
+
+이렇게 createPortal을 사용해서 div 태그에 생성한 모달을 컨테이너 portal안으로 넣어준다.
+따라서 root컨테이너와 portal컨테이너가 따로 존재해 더이상 모달은 root 컨테이너 자식으로 인식하지 않는다.
+
+## Portal을 통한 이벤트 버블링
+
+### 이벤트 버블링
+
+중첩된 자식 요소에서 이벤트가 발생할 때 그 이벤트가 부모로 전달되는 것이다.
+
+### portal과 이벤트 버블링
+
+portal이 DOM 트리의 어디에도 존재할 수 있다 하더라도 모든 다른 면에서 일반적인 React 자식처럼 동작한다.
+이는 DOM 트리에서의 위치에 상관없이 portal은 여전히 React 트리에 존재하기 때문이다.
+
+```
+<div style={modalWrapperStyle} onClick={() => console.log('clicked!')}>
+    <button onClick={() => setIsModalOpen(true)}>모달 열기</button>
+    <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        모달 내용
+    </Modal>
+</div>
+```
+
+모달을 클릭하면 이벤트가 상위로 전달되어서 상위 요소인 div에도 이벤트가 전달된다.
+
+<p align="center">
+  <img src="/static/images/portal/last.jpg" />
+</p>
+
+이처럼 모달을 클릭했는데 콘솔이 찍힌다.
+
+<br />
+
+<details>
+<summary>출처</summary>
+<div markdown="1">
+
+_이 글은 100가지 시나리오로 학습하는 프론트엔드 : 5년 이상 경험을 초압축한 실전 문제 해결 패키지 강의를 듣고 정리한 글입니다._
+
+- 리액트 공식문서 https://ko.legacy.reactjs.org/docs/portals.html
+
+</div>
+</details>

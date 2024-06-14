@@ -1,0 +1,9 @@
+/* 새 css class */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.center {
+  display: inline-block;
+  margin-right: 10px;
+}
